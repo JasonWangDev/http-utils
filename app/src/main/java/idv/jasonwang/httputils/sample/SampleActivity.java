@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import idv.jasonwang.httputils.HttpUtils;
+
 public class SampleActivity extends AppCompatActivity {
 
     @Override
@@ -14,7 +16,7 @@ public class SampleActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                new HttpUtils().getParams();
             }
         });
     }

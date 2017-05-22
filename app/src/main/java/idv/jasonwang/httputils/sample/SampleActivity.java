@@ -24,39 +24,19 @@ public class SampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Map<String, String> login = new HashMap<>();
-                login.put("X", "X");
-                login.put("X", "X");
-                login.put("X", "X");
+                login.put("sef", "sefsef");
+                login.put("sef", "sef");
+                login.put("sef", "sef");
 
-                httpClient.post("X", login);
+                httpClient.post("sefs", login);
 
-
-
-
-//                File file = new File(Environment.getExternalStorageDirectory() + "/download/LARGE_elevation.jpg");
-//                FileInputStream inputStream = null;
-//                try {
-//                    inputStream = new FileInputStream(file);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                new HttpUtils().postMultiPart(inputStream);
-//                new HttpUtils().postMultiPartWithProgress(file);
-
-//                new HttpUtils().downloadFileWithProgress(Environment.getExternalStorageDirectory() + "/download", "Download_Test.jpg");
             }
         });
 
         findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Map<String, Object> params = new HashMap<>();
-                params.put("X", new File(Environment.getExternalStorageDirectory() + "/download/LARGE_elevation.jpg"));
-                params.put("X", "X");
-                params.put("X", "X");
-
-                httpClient.upload("X", params);
+                httpClient.download("sef", new File(Environment.getExternalStorageDirectory() + "/download", "Download_Test_1.jpg"));
             }
         });
     }

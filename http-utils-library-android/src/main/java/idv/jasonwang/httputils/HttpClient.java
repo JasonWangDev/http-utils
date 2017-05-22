@@ -4,9 +4,12 @@ import android.net.Uri;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -228,12 +231,59 @@ public class HttpClient {
         });
     }
 
-    public void download(String url, File output) {
-
+    public void download(String url, File file) {
+        download(url, file, null);
     }
 
-    public void download(String url, File output, String tag) {
+    public void download(String url, final File file, String tag) {
+        Request.Builder builder = new Request.Builder();
+        try
+        {
+            builder.url(url);
+        }
+        catch (IllegalArgumentException e)
+        {
+            Log.e("TAG", "URL Protocol Fail");
 
+            return;
+        }
+        if (tag != null)
+            builder.tag(tag);
+        final Request request = builder.build();
+
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("TAG", "onFailure");
+                Log.e("TAG", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                InputStream inputStream = response.body().byteStream();
+                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+
+                byte[] buffer = new byte[1024 * 4];
+                int len;
+                long size = response.body().contentLength();
+                long total = 0;
+                long progress;
+                while ((len = inputStream.read(buffer)) != -1)
+                {
+                    outputStream.write(buffer, 0, len);
+
+                    total += len;
+                    progress = (long) ((double) total / size * 100);
+                    Log.d("TAG", "Progress: " + progress);
+                }
+                outputStream.flush();
+                outputStream.close();
+                inputStream.close();
+
+                Log.d("TAG", "Done");
+            }
+        });
     }
 
     /**

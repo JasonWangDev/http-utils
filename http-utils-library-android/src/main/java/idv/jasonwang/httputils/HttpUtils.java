@@ -2,8 +2,10 @@ package idv.jasonwang.httputils;
 
 import android.util.Log;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,70 +32,6 @@ import okio.BufferedSink;
  */
 public class HttpUtils {
 
-    public void get() {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("https://httpbin.org/headers").build();
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d("TAG", "onFailure");
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", response.body().string());
-            }
-        });
-    }
-
-    public void getParams() {
-        HttpUrl.Builder builder = HttpUrl.parse("https://httpbin.org/get").newBuilder();
-        builder.addQueryParameter("param_1", "9999");
-        String url = builder.build().toString();
-
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d("TAG", "onFailure");
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", response.body().string());
-            }
-        });
-    }
-
-    public void postForm() {
-        RequestBody body = new FormBody.Builder()
-                .add("params_1", "99999")
-                .add("params_2", "99999")
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("https://httpbin.org/post")
-                .post(body)
-                .build();
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d("TAG", "onFailure");
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", response.body().string());
-            }
-        });
-    }
 
     public void postMultiPart(final File file) {
         RequestBody body1 = new FormBody.Builder()
@@ -253,9 +191,9 @@ public class HttpUtils {
 
     public void postMultiPartWithProgress(final File file) {
         RequestBody body1 = new FormBody.Builder()
-                .add("weg", "weg")
-                .add("weg", "wegewg")
-                .add("gsdgs", "wegewg")
+                .add("467", "755745")
+                .add("4576", "4576")
+                .add("4576", "457")
                 .build();
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -278,7 +216,7 @@ public class HttpUtils {
                     }
                 }).build();
         Request request = new Request.Builder()
-                .url("sgsgg")
+                .url("4576")
                 .post(body1)
                 .build();
         Call call1 = client.newCall(request);
@@ -290,14 +228,14 @@ public class HttpUtils {
             public void onResponse(Call calssl, Response response) throws IOException {
                 RequestBody body = new MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
-                        .addFormDataPart("weg", "wegewg")
-                        .addFormDataPart("weg", "weg")
-                        .addFormDataPart("wegeg", "test", new CountingFileRequestBody(file, "image/jpg"))
+                        .addFormDataPart("4576", "4576")
+                        .addFormDataPart("4576", "4576")
+                        .addFormDataPart("5476", "4576", new CountingFileRequestBody(file, "image/jpg"))
                         .build();
 
 //                OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
-                        .url("wgwegwg")
+                        .url("476675")
                         .post(body)
                         .build();
                 Call call = client.newCall(request);
@@ -371,7 +309,7 @@ public class HttpUtils {
             FileInputStream inputStream = new FileInputStream(file);
             long total = 0;
             int len;
-            byte[] buff = new byte[2048];
+            byte[] buff = new byte[4096];
             while ((len = inputStream.read(buff)) != -1)
             {
                 sink.outputStream().write(buff, 0, len);
@@ -385,6 +323,95 @@ public class HttpUtils {
             inputStream.close();
         }
 
+    }
+
+    public void downloadFile(final String path, final String filename) {
+        OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder().url("74576").build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("TAG", "onFailure");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                File file = new File(path, filename);
+                if (file.exists())
+                {
+                    Log.d("TAG", "File Create Fail");
+
+                    return;
+                }
+
+                final InputStream inputStream = response.body().byteStream();
+                final FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+                byte[] buffer = new byte[2048];
+                int len;
+                while ((len = inputStream.read(buffer)) != -1)
+                {
+                    fileOutputStream.write(buffer, 0, len);
+                }
+                fileOutputStream.flush();
+                fileOutputStream.close();
+                inputStream.close();
+
+                Log.d("TAG", "Download File Done.");
+            }
+        });
+    }
+
+    public void downloadFileWithProgress(final String path, final String filename) {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+
+        OkHttpClient client = new OkHttpClient.Builder().addNetworkInterceptor(logging).build();
+        final Request request = new Request.Builder().url("547567").build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("TAG", "onFailure");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Long startTime = System.currentTimeMillis();
+
+                File file = new File(path, filename);
+                if (file.exists())
+                {
+                    Log.d("TAG", "File Create Fail");
+
+                    return;
+                }
+
+                final InputStream inputStream = response.body().byteStream();
+                final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+
+                byte[] buffer = new byte[1024 * 8];
+                int len;
+                long size = response.body().contentLength();
+                long total = 0;
+                while ((len = inputStream.read(buffer)) != -1)
+                {
+                    output.write(buffer, 0, len);
+
+                    total += len;
+                    Long progress = (long) ((double) total / size * 100);
+                    Log.d("TAG", String.format("Progress: %d", progress));
+                }
+                output.flush();
+                output.close();
+                inputStream.close();
+
+                file.delete();
+
+                Log.d("TAG", "Download File Done. Time: " + (System.currentTimeMillis() - startTime));
+            }
+        });
     }
 
 }

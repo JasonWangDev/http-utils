@@ -4,7 +4,10 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Http-Utils.iml" filepath="$PROJECT_DIR$/Http-Utils.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/http-utils-android.iml" filepath="$PROJECT_DIR$/http-utils-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/http-utils-library/http-utils-library.iml" filepath="$PROJECT_DIR$/http-utils-library/http-utils-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/http-utils-library-android/http-utils-library-android.iml" filepath="$PROJECT_DIR$/http-utils-library-android/http-utils-library-android.iml" />
     </modules>
   </component>
 </project>

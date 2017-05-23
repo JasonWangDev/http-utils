@@ -1,6 +1,6 @@
 package idv.jasonwang.httputils;
 
-import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -15,8 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import idv.jasonwang.httputils.callback.Callback;
+import idv.jasonwang.httputils.callback.FileCallback;
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.FormBody;
@@ -117,20 +118,7 @@ public class HttpClient {
             requestBuilder.tag(tag);
         Request request = requestBuilder.build();
 
-        Call call = okHttpClient.newCall(request);
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("TAG", "onFailure");
-                Log.e("TAG", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", response.body().string());
-            }
-        });
+        execute(okHttpClient, request, null);
     }
 
     public void post(String url, Map<String, String> params) {
@@ -162,19 +150,7 @@ public class HttpClient {
             requestBuilder.tag(tag);
         Request request = requestBuilder.build();
 
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("TAG", "onFailure");
-                Log.e("TAG", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", response.body().string());
-            }
-        });
+        execute(okHttpClient, request, null);
     }
 
     public void upload(String url, Map<String, Object> params) {
@@ -215,27 +191,14 @@ public class HttpClient {
             requestBuilder.tag(tag);
         Request request = requestBuilder.build();
 
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("TAG", "onFailure");
-                Log.e("TAG", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG", "Done");
-                Log.d("TAG", response.body().string());
-            }
-        });
+       execute(okHttpClient, request, null);
     }
 
-    public void download(String url, File file) {
-        download(url, file, null);
+    public void download(String url, Callback callback) {
+        download(url, null, callback);
     }
 
-    public void download(String url, final File file, String tag) {
+    public void download(String url, String tag, Callback callback) {
         Request.Builder builder = new Request.Builder();
         try
         {
@@ -249,63 +212,12 @@ public class HttpClient {
         }
         if (tag != null)
             builder.tag(tag);
-        final Request request = builder.build();
+        Request request = builder.build();
 
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("TAG", "onFailure");
-                Log.e("TAG", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                InputStream inputStream = response.body().byteStream();
-                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
-
-                byte[] buffer = new byte[1024 * 4];
-                int len;
-                long size = response.body().contentLength();
-                long total = 0;
-                long progress;
-                while ((len = inputStream.read(buffer)) != -1)
-                {
-                    outputStream.write(buffer, 0, len);
-
-                    total += len;
-                    progress = (long) ((double) total / size * 100);
-                    Log.d("TAG", "Progress: " + progress);
-                }
-                outputStream.flush();
-                outputStream.close();
-                inputStream.close();
-
-                Log.d("TAG", "Done");
-            }
-        });
+       execute(okHttpClient, request, callback);
     }
 
-    /**
-     *
-     * 在上傳過程當中取消時，會呼叫 Call onFailure 方法。在下載過程當中取消時，onResponse 會跳出
-     * "java.net.SocketException: Socket is closed" 錯誤訊息，程式不會崩潰。
-     *
-     * @param tag
-     */
-    public void cancelRequest(String tag) {
-        for (Call call : okHttpClient.dispatcher().queuedCalls())
-        {
-            if (tag.equals(call.request().tag()))
-                call.cancel();
-        }
 
-        for (Call call : okHttpClient.dispatcher().runningCalls())
-        {
-            if (tag.equals(call.request().tag()))
-                call.cancel();
-        }
-    }
 
 
     private class CountingFileRequestBody extends RequestBody {
@@ -351,6 +263,64 @@ public class HttpClient {
             inputStream.close();
         }
 
+    }
+
+
+
+
+
+    /**
+     * 在上傳過程當中取消時，會呼叫 Call onFailure 方法。在下載過程當中取消時，onResponse 會跳出
+     * "java.net.SocketException: Socket is closed" 錯誤訊息，程式不會崩潰。
+     *
+     * @param client
+     */
+    public void cancelAll(OkHttpClient client) {
+        cancel(client, null);
+    }
+
+    /**
+     *
+     * @param client
+     * @param tag
+     */
+    public void cancel(OkHttpClient client, String tag) {
+        for (Call call : client.dispatcher().queuedCalls())
+        {
+            if (null == tag)
+                call.cancel();
+            else if (tag.equals(call.request().tag()))
+                call.cancel();
+        }
+
+        for (Call call : client.dispatcher().runningCalls())
+        {
+            if (null == tag)
+                call.cancel();
+            else if (tag.equals(call.request().tag()))
+                call.cancel();
+        }
+    }
+
+
+    private void execute(OkHttpClient client, Request request, final Callback callback) {
+        if (client == null || request == null)
+            throw new NullPointerException("OkHttpClient or Request can't null.");
+
+        Call call = client.newCall(request);
+        call.enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (callback != null)
+                    callback.onFail();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (callback != null)
+                    callback.onResponse(callback.convert(response));
+            }
+        });
     }
 
 }

@@ -1,1 +1,1 @@
-include ':app', ':http-utils-library-android'
+include ':app', ':http-utils-library-android', ':httpclient-library-android'
